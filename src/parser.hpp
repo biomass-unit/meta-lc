@@ -43,8 +43,8 @@ namespace mlc::parser {
     using Is_space = Is_one_of<Character<' '>, Character<'\n'>>;
 
 
-    template <class, string>
-    struct Success {};
+    template <class R, string I>
+    struct Success : Returns<Success<R, I>> {};
 
     struct Null : Returns<Null> {};
 
@@ -61,7 +61,7 @@ namespace mlc::parser {
         template <string>
         struct Parse : Failure {};
         template <character C, character... Cs> requires P::template F<C>::Result::value
-        struct Parse<String<C, Cs...>> : Returns<Success<C, String<Cs...>>> {};
+        struct Parse<String<C, Cs...>> : Success<C, String<Cs...>> {};
     };
 
     template <character C>
@@ -69,9 +69,20 @@ namespace mlc::parser {
 
     struct EndP {
         template <string>
-        struct Parse : Returns<Success<Null, String<>>> {};
+        struct Parse : Success<Null, String<>> {};
         template <character C, character... Cs>
         struct Parse<String<C, Cs...>> : Failure {};
+    };
+
+
+    template <string>
+    struct StrP;
+    template <character... As>
+    struct StrP<String<As...>> {
+        template <string>
+        struct Parse : Failure {};
+        template <character... Bs>
+        struct Parse<String<As..., Bs...>> : Success<String<As...>, String<Bs...>> {};
     };
 
 
@@ -81,7 +92,7 @@ namespace mlc::parser {
         template <class, class>
         struct Helper1 : Failure {};
         template <class R1, class R2, string I>
-        struct Helper1<R1, Success<R2, I>> : Returns<Success<Pair<R1, R2>, I>> {};
+        struct Helper1<R1, Success<R2, I>> : Success<Pair<R1, R2>, I> {};
 
         template <class>
         struct Helper2 : Failure {};
@@ -92,8 +103,46 @@ namespace mlc::parser {
         struct Parse : Helper2<Parse_result<P1, I>> {};
     };
 
-
     template <class P, class... Ps>
     using SeqP = Fold_left<Adapt_template<Seq2P>>::template F<P, List<Ps...>>::Result;
+
+
+    template <class P, class F>
+    struct MapP {
+    private:
+        template <class>
+        struct Helper : Failure {};
+        template <class R, string I>
+        struct Helper<Success<R, I>> : Success<typename F::template F<R>::Result, I> {};
+    public:
+        template <string I>
+        struct Parse : Helper<Parse_result<P, I>> {};
+    };
+
+
+    template <class P>
+    struct Zero_or_moreP {
+    private:
+        template <list L, string I, class>
+        struct Helper : Success<L, I> {};
+        template <class... Ts, string Last, class T, string I>
+        struct Helper<List<Ts...>, Last, Success<T, I>> :
+            Helper<List<Ts..., T>, I, Parse_result<P, I>> {};
+    public:
+        template <string I>
+        struct Parse : Helper<List<>, I, Parse_result<P, I>> {};
+    };
+
+    template <class P>
+    struct One_or_moreP {
+    private:
+        template <class>
+        struct Helper : Failure {};
+        template <list L, string I> requires (L::size != 0)
+        struct Helper<Success<L, I>> : Success<L, I> {};
+    public:
+        template <string I>
+        struct Parse : Helper<Parse_result<Zero_or_moreP<P>, I>> {};
+    };
 
 }

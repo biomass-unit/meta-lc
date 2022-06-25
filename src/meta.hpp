@@ -118,7 +118,8 @@ namespace mlc {
         template <class I, list>
         struct F : Returns<I> {};
         template <class I, class T, class... Ts>
-        struct F<I, List<T, Ts...>> : F<typename G::template F<I, T>::Result, List<Ts...>> {};
+        struct F<I, List<T, Ts...>> :
+            F<typename G::template F<I, T>::Result, List<Ts...>> {};
     };
 
     template <class G>
@@ -126,7 +127,8 @@ namespace mlc {
         template <class I, list>
         struct F : Returns<I> {};
         template <class I, class T, class... Ts>
-        struct F<I, List<T, Ts...>> : Returns<typename G::template F<T, typename F<I, List<Ts...>>::Result>::Result> {};
+        struct F<I, List<T, Ts...>> :
+            G::template F<T, typename F<I, List<Ts...>>::Result> {};
     };
 
 }
