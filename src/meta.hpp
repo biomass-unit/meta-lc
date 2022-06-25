@@ -30,17 +30,24 @@ namespace mlc {
     };
 
 
-    template <char... cs>
-    struct String {
-        static constexpr Usize size = sizeof...(cs);
+    template <unsigned char c>
+    struct Character : std::integral_constant<decltype(c), c> {};
 
-        struct Concat {
-            template <class>
-            struct F;
-            template <char... other_cs>
-            struct F<String<other_cs...>> : Returns<String<cs..., other_cs...>> {};
-        };
-    };
+
+    namespace dtl {
+        template <class>
+        struct Is_character : std::false_type {};
+        template <unsigned char c>
+        struct Is_character<Character<c>> : std::true_type {};
+    }
+
+
+    template <class T>
+    concept character = dtl::Is_character<T>::value;
+
+
+    template <character... Cs>
+    using String = List<Cs...>;
 
 
     namespace dtl {
@@ -51,8 +58,8 @@ namespace mlc {
 
         template <class>
         struct Is_string : std::false_type {};
-        template <char... cs>
-        struct Is_string<String<cs...>> : std::true_type {};
+        template <class... Cs>
+        struct Is_string<String<Cs...>> : std::true_type {};
     }
 
 
