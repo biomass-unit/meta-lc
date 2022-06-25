@@ -105,4 +105,28 @@ namespace mlc {
     template <dtl::Metastring str>
     using To_string = dtl::To_string_helper<str, std::make_index_sequence<str.size>>::Result;
 
+
+    template <template <class...> class G>
+    struct Adapt_template {
+        template <class... Ts>
+        struct F : Returns<G<Ts...>> {};
+    };
+
+
+    template <class G>
+    struct Fold_left {
+        template <class I, list>
+        struct F : Returns<I> {};
+        template <class I, class T, class... Ts>
+        struct F<I, List<T, Ts...>> : F<typename G::template F<I, T>::Result, List<Ts...>> {};
+    };
+
+    template <class G>
+    struct Fold_right {
+        template <class I, list>
+        struct F : Returns<I> {};
+        template <class I, class T, class... Ts>
+        struct F<I, List<T, Ts...>> : Returns<typename G::template F<T, typename F<I, List<Ts...>>::Result>::Result> {};
+    };
+
 }
