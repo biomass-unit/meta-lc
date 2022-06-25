@@ -131,4 +131,20 @@ namespace mlc {
             G::template F<T, typename F<I, List<Ts...>>::Result> {};
     };
 
+
+    struct String_to_integer {
+    private:
+        template <Usize accumulator, string>
+        struct Helper : Returns<std::integral_constant<Usize, accumulator>> {};
+
+        template <Usize accumulator, character C, character... Cs>
+        struct Helper<accumulator, String<C, Cs...>> :
+            Helper<accumulator * 10 + (C::value - '0'), String<Cs...>> {};
+    public:
+        template <string>
+        struct F : Failure {};
+        template <string S> requires (S::size != 0)
+        struct F<S> : Helper<0, S> {};
+    };
+
 }

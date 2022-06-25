@@ -145,4 +145,32 @@ namespace mlc::parser {
         struct Parse : Helper<Parse_result<Zero_or_moreP<P>, I>> {};
     };
 
+
+    template <class P1, class P2>
+    struct Or2P {
+    private:
+        template <class, class>
+        struct Helper : Failure {};
+        template <class R, class I>
+        struct Helper<Failure, Success<R, I>> : Success<R, I> {};
+        template <class R, class I>
+        struct Helper<Success<R, I>, Failure> : Success<R, I> {};
+        template <class R1, string I1, class R2, string I2>
+        struct Helper<Success<R1, I1>, Success<R2, I2>> :
+            std::conditional_t<
+                I1::size <= I2::size,
+                Success<R1, I1>,
+                Success<R2, I2>
+            > {};
+    public:
+        template <string I>
+        struct Parse : Helper<Parse_result<P1, I>, Parse_result<P2, I>> {};
+    };
+
+    template <class P, class... Ps>
+    using OrP = Fold_left<Adapt_template<Or2P>>::template F<P, List<Ps...>>::Result;
+
+
+    using IntP = MapP<One_or_moreP<PredP<Is_digit>>, String_to_integer>;
+
 }
