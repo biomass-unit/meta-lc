@@ -3,6 +3,9 @@
 
 
 auto main() -> int {
-    using R = mlc::parser::Is_space::F<mlc::Character<'a'>>::Result;
-    std::cout << std::boolalpha << R::value;
+    using P = mlc::parser::CharP<mlc::Character<'a'>>;
+    using I = mlc::To_string<"abc">;
+    using R = P::template Parse<I>::Result;
+
+    std::cout << typeid(R).name();
 }

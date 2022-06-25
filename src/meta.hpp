@@ -30,6 +30,13 @@ namespace mlc {
     };
 
 
+    template <class Fst, class Snd>
+    struct Pair {
+        using First  = Fst;
+        using Second = Snd;
+    };
+
+
     template <unsigned char c>
     struct Character : std::integral_constant<decltype(c), c> {};
 
@@ -68,5 +75,34 @@ namespace mlc {
 
     template <class T>
     concept string = dtl::Is_string<T>::value;
+
+
+    namespace dtl {
+        template <Usize n>
+        struct Metastring {
+            unsigned char characters[n];
+
+            static constexpr Usize size = n;
+
+            consteval Metastring(char const* const str) {
+                for (Usize i = 0; i != n; ++i) {
+                    characters[i] = static_cast<unsigned char>(str[i]);
+                }
+            }
+        };
+
+        template <Usize n>
+        Metastring(char const(&)[n]) -> Metastring<n - 1>;
+
+        template <Metastring, class>
+        struct To_string_helper;
+        template <Metastring str, Usize... is>
+        struct To_string_helper<str, std::index_sequence<is...>> :
+            Returns<String<Character<str.characters[is]>...>> {};
+    }
+
+
+    template <dtl::Metastring str>
+    using To_string = dtl::To_string_helper<str, std::make_index_sequence<str.size>>::Result;
 
 }
