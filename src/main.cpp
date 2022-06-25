@@ -1,6 +1,10 @@
 #include <iostream>
+#include "meta.hpp"
 
 
 auto main() -> int {
-    std::cout << "Hello, world!";
+    using L1 = mlc::List<int, float>;
+    using L2 = L1::Concat::F<mlc::List<char, double>>::Result;
+
+    std::cout << typeid(L2).name();
 }
