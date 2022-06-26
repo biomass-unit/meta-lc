@@ -1,5 +1,15 @@
 #include <iostream>
-#include "parser.hpp"
+#include <string>
+
+//#include "meta.hpp"
+//#include "parser.hpp"
+#include "to_string.hpp"
+
+
+template <mlc::character... Cs>
+auto to_runtime_string(mlc::String<Cs...>) -> std::string {
+    return { Cs::value... };
+}
 
 
 auto main() -> int {
@@ -8,8 +18,8 @@ auto main() -> int {
     using P3 = mlc::parser::CharP<mlc::Character<'c'>>;
 
     using P = mlc::parser::Zero_or_moreP<mlc::parser::OrP<P1, P2, P3>>;
-    using I = mlc::To_string<"abcabcd">;
+    using I = mlc::Make_string<"abcabcd">;
     using R = mlc::parser::Parse_result<P, I>;
 
-    std::cout << typeid(R).name();
+    std::cout << to_runtime_string(typename mlc::To_string::template F<R>::Result {});
 }

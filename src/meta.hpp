@@ -22,10 +22,12 @@ namespace mlc {
         static constexpr Usize size = sizeof...(Ts);
 
         struct Concat {
-            template <class>
+            template <class...>
             struct F;
-            template <class... Us>
-            struct F<List<Us...>> : Returns<List<Ts..., Us...>> {};
+            template <>
+            struct F<> : Returns<List> {};
+            template <class... Us, class... Ls>
+            struct F<List<Us...>, Ls...> : List<Ts..., Us...>::Concat::template F<Ls...> {};
         };
     };
 
@@ -77,6 +79,12 @@ namespace mlc {
     concept string = dtl::Is_string<T>::value;
 
 
+    struct Concat {
+        template <list L, list... Ls>
+        struct F : L::Concat::template F<Ls...> {};
+    };
+
+
     namespace dtl {
         template <Usize n>
         struct Metastring {
@@ -103,7 +111,7 @@ namespace mlc {
 
 
     template <dtl::Metastring str>
-    using To_string = dtl::To_string_helper<str, std::make_index_sequence<str.size>>::Result;
+    using Make_string = dtl::To_string_helper<str, std::make_index_sequence<str.size>>::Result;
 
 
     template <template <class...> class G>
@@ -145,6 +153,21 @@ namespace mlc {
         struct F : Failure {};
         template <string S> requires (S::size != 0)
         struct F<S> : Helper<0, S> {};
+    };
+
+    struct Integer_to_string {
+    private:
+        template <Usize n>
+        struct Helper : Helper<n / 10>::Result::Concat::template F<String<Character<'0' + (n % 10)>>> {};
+        template <>
+        struct Helper<0> : Returns<String<>> {};
+    public:
+        template <class>
+        struct F;
+        template <Usize n>
+        struct F<std::integral_constant<Usize, n>> : Helper<n> {};
+        template <>
+        struct F<std::integral_constant<Usize, 0>> : Returns<String<Character<'0'>>> {};
     };
 
 }
