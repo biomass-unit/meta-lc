@@ -14,13 +14,13 @@ namespace mlc::ast {
     template <class T>
     concept expression = dtl::Is_expression<T>::value;
 
-    template <string>
+    template <string Name>
     struct Variable {};
 
-    template <expression, expression>
+    template <expression Function, expression Argument>
     struct Application {};
 
-    template <string, expression>
+    template <string Parameter, expression Body>
     struct Abstraction {};
 
 

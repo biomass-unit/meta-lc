@@ -3,9 +3,9 @@
 
 #include "meta.hpp"
 #include "parser.hpp"
-#include "meta.hpp"
 #include "to_string.hpp"
 #include "ast.hpp"
+#include "lc-parser.hpp"
 
 
 template <mlc::character... Cs>
@@ -23,10 +23,9 @@ auto main() -> int {
     using I = mlc::Make_string<"(abcabc)w">;
     using R = mlc::parser::Parse_result<P, I>;*/
 
-    using namespace mlc;
-    using namespace ast;
+    using P = mlc::parser::IntP;
+    using I = mlc::Make_string<"150">;
+    using R = mlc::parser::Parse_result<P, I>;
 
-    using E = Application<Abstraction<Make_string<"x">, Variable<Make_string<"x">>>, Variable<Make_string<"y">>>;
-
-    std::cout << to_runtime_string(typename mlc::To_string::template F<E>::Result {});
+    std::cout << to_runtime_string(typename mlc::To_string::template F<R>::Result {});
 }

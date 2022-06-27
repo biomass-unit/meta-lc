@@ -75,6 +75,19 @@ namespace mlc::parser {
     };
 
 
+    template <class P>
+    struct IgnoreP {
+    private:
+        template <class>
+        struct Helper : Failure {};
+        template <class R, string I>
+        struct Helper<Success<R, I>> : Success<Null, I> {};
+    public:
+        template <string I>
+        struct Parse : Helper<Parse_result<P, I>> {};
+    };
+
+
     template <string>
     struct StrP;
     template <character... As>
@@ -91,6 +104,10 @@ namespace mlc::parser {
     private:
         template <class, class>
         struct Helper1 : Failure {};
+        template <class R, string I>
+        struct Helper1<Null, Success<R, I>> : Success<R, I> {};
+        template <class R, string I>
+        struct Helper1<R, Success<Null, I>> : Success<R, I> {};
         template <class R1, class R2, string I>
         struct Helper1<R1, Success<R2, I>> : Success<Pair<R1, R2>, I> {};
 
@@ -169,8 +186,5 @@ namespace mlc::parser {
 
     template <class P, class... Ps>
     using OrP = Fold_left<Adapt_template<Or2P>>::template F<P, List<Ps...>>::Result;
-
-
-    using IntP = MapP<One_or_moreP<PredP<Is_digit>>, String_to_integer>;
 
 }

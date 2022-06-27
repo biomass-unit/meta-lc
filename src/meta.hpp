@@ -116,6 +116,22 @@ namespace mlc {
     };
 
 
+    struct Compose2 {
+        template <class G, class H>
+        struct F {
+            struct Result {
+                template <class... Ts>
+                struct F : G::template F<typename H::template F<Ts...>::Result> {};
+            };
+        };
+    };
+
+    struct Compose {
+        template <class G, class... Hs>
+        struct F : Fold_left<Compose2>::template F<G, List<Hs...>> {};
+    };
+
+
     struct String_to_integer {
     private:
         template <std::size_t accumulator, string>
