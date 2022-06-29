@@ -3,7 +3,6 @@
 
 #include "meta.hpp"
 #include "parser.hpp"
-#include "to_string.hpp"
 #include "ast.hpp"
 #include "environment.hpp"
 #include "lc-parser.hpp"

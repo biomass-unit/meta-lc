@@ -214,6 +214,15 @@ namespace mlc::parser {
     template <class P, class... Ps>
     using OrP = Fold_left<Adapt_template<Or2P>>::template F<P, List<Ps...>>::Result;
 
+
+    template <class T, string I>
+    struct To_string::F<parser::Success<T, I>> : Concat::template F<
+        Make_string<"Result: ">,
+        typename To_string::F<T>::Result,
+        Make_string<", with remaining: ">,
+        I
+    > {};
+
 }
 
 

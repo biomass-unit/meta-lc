@@ -208,4 +208,35 @@ namespace mlc {
     template <dtl::Metastring str>
     using Make_string = dtl::Make_string_helper<str, std::make_index_sequence<str.size>>::Result;
 
+
+    struct To_string {
+        template <class>
+        struct F;
+    };
+
+
+    template <>
+    struct To_string::F<Failure> : Returns<Make_string<"mlc::Failure">> {};
+
+    template <character... Cs>
+    struct To_string::F<String<Cs...>> : Returns<String<Cs...>> {};
+
+    template <character C>
+    struct To_string::F<C> : Returns<String<C>> {};
+
+    template <>
+    struct To_string::F<List<>> : Returns<String<>> {};
+
+    template <class T, class... Ts> requires (!character<T> || !(character<Ts> && ...))
+    struct To_string::F<List<T, Ts...>> :
+        std::conditional_t<
+            sizeof...(Ts) == 0,
+            typename To_string::template F<T>::Result,
+            typename To_string::template F<T>::Result::Concat::template F<String<Character<','>, Character<' '>>>::Result
+        >::Concat::template F<typename F<List<Ts...>>::Result> {};
+
+    template <std::size_t n>
+    struct To_string::F<std::integral_constant<std::size_t, n>> :
+        Integer_to_string::template F<std::integral_constant<std::size_t, n>> {};
+
 }
