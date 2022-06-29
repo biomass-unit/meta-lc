@@ -56,6 +56,19 @@ namespace mlc::parser {
     using Parse_result = Parse<Parser, Input>::Result;
 
 
+    template <class P>
+    struct Extract {
+    private:
+        template <class>
+        struct Helper : Failure {};
+        template <class R, string I>
+        struct Helper<Success<R, I>> : Returns<R> {};
+    public:
+        template <string I>
+        using F = Helper<Parse_result<P, I>>;
+    };
+
+
     template <character_predicate P>
     struct PredP {
         template <string>

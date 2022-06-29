@@ -92,12 +92,12 @@ namespace mlc {
 
     struct Parse_expression {
         template <string I>
-        using F = parser::Parse_result<parser::ExprP<void>, I>;
+        using F = parser::Extract<parser::ExprP<void>>::template F<I>;
     };
 
     struct Parse_environment {
         template <string I>
-        using F = parser::Parse_result<parser::EnvP, I>;
+        using F = parser::Extract<parser::EnvP>::template F<I>;
     };
 
 }

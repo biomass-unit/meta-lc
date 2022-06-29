@@ -5,6 +5,7 @@
 #include "parser.hpp"
 #include "to_string.hpp"
 #include "ast.hpp"
+#include "environment.hpp"
 #include "lc-parser.hpp"
 
 
@@ -28,7 +29,11 @@ auto main() -> int {
         or    = \a b.a a b
         not   = \a.a false true
     )">;
-    using R = mlc::Parse_environment::template F<I>::Result;
+    using E = mlc::Parse_environment::template F<I>::Result;
+
+    static_assert(mlc::env::Is_defined::template F<mlc::Make_string<"true">, E>::Result::value);
+
+    using R = mlc::env::Lookup::template F<mlc::Make_string<"and">, E>::Result;
 
     std::cout << to_runtime_string(typename mlc::To_string::template F<R>::Result {});
 }
