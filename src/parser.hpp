@@ -188,3 +188,14 @@ namespace mlc::parser {
     using OrP = Fold_left<Adapt_template<Or2P>>::template F<P, List<Ps...>>::Result;
 
 }
+
+
+#define DECLARE_PARSER(name)      \
+template <bool, ::mlc::delayer T> \
+struct name ## _indirect;         \
+template <::mlc::delayer T>       \
+struct name : name ## _indirect<true, T>::Result {}
+
+#define DEFINE_PARSER(delayer_name, name, ...) \
+template <::mlc::delayer delayer_name>         \
+struct name ## _indirect<true, T> : ::mlc::Returns<__VA_ARGS__> {}

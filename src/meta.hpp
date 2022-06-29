@@ -46,6 +46,11 @@ namespace mlc {
     concept character = dtl::Is_character<T>::value;
 
 
+    // Used for delaying template instantiation
+    template <class T>
+    concept delayer = std::is_void_v<T>;
+
+
     template <class... Ts>
     struct List {
         static constexpr std::size_t size = sizeof...(Ts);
@@ -84,10 +89,23 @@ namespace mlc {
     }
 
 
-    template <class Fst, class Snd>
-    struct Pair {
-        using First  = Fst;
-        using Second = Snd;
+    template <class, class>
+    struct Pair {};
+
+
+    template <class G>
+    struct Adapt_pair_argument {
+        template <class>
+        struct F;
+        template <class Fst, class Snd>
+        struct F<Pair<Fst, Snd>> : G::template F<Fst, Snd> {};
+    };
+
+
+    template <class G>
+    struct Flip {
+        template <class T, class U>
+        struct F : G::template F<U, T> {};
     };
 
 
