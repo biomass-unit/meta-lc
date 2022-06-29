@@ -23,7 +23,7 @@ namespace mlc {
     template <template <class...> class G>
     struct Adapt_template {
         template <class... Ts>
-        struct F : Returns<G<Ts...>> {};
+        using F = Returns<G<Ts...>>;
     };
 
 
@@ -105,13 +105,13 @@ namespace mlc {
     template <class G>
     struct Flip {
         template <class T, class U>
-        struct F : G::template F<U, T> {};
+        using F = G::template F<U, T>;
     };
 
 
     struct Concat {
         template <list L, list... Ls>
-        struct F : L::Concat::template F<Ls...> {};
+        using F = L::Concat::template F<Ls...>;
     };
 
 
@@ -139,14 +139,14 @@ namespace mlc {
         struct F {
             struct Result {
                 template <class... Ts>
-                struct F : G::template F<typename H::template F<Ts...>::Result> {};
+                using F = G::template F<typename H::template F<Ts...>::Result>;
             };
         };
     };
 
     struct Compose {
         template <class G, class... Hs>
-        struct F : Fold_left<Compose2>::template F<G, List<Hs...>> {};
+        using F = Fold_left<Compose2>::template F<G, List<Hs...>>;
     };
 
 

@@ -66,4 +66,11 @@ namespace mlc {
         typename To_string::template F<Body>::Result
     > {};
 
+    template <string Name, ast::expression Expression>
+    struct To_string::F<ast::Binding<Name, Expression>> : Concat::template F<
+        Name,
+        String<Character<' '>, Character<'='>, Character<' '>>,
+        typename To_string::template F<Expression>::Result
+    > {};
+
 }

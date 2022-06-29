@@ -14,25 +14,25 @@ namespace mlc::parser {
     template <character Min, character Max> requires (Min::value < Max::value)
     struct Is_in_between {
         template <character C>
-        struct F : Returns<std::bool_constant<Min::value <= C::value && C::value <= Max::value>> {};
+        using F = Returns<std::bool_constant<Min::value <= C::value && C::value <= Max::value>>;
     };
 
     template <character_predicate... Ps>
     struct Satisfies_one_of {
         template <character C>
-        struct F : Returns<std::disjunction<typename Ps::template F<C>::Result...>> {};
+        using F = Returns<std::disjunction<typename Ps::template F<C>::Result...>>;
     };
 
     template <character... Cs>
     struct Is_one_of {
         template <character C>
-        struct F : Returns<std::disjunction<std::is_same<C, Cs>...>> {};
+        using F = Returns<std::disjunction<std::is_same<C, Cs>...>>;
     };
 
     template <character... Cs>
     struct Is_not_one_of {
         template <character C>
-        struct F : Returns<std::conjunction<std::negation<std::is_same<C, Cs>>...>> {};
+        using F = Returns<std::conjunction<std::negation<std::is_same<C, Cs>>...>>;
     };
 
     using Is_digit = Is_in_between<Character<'0'>, Character<'9'>>;
@@ -74,6 +74,18 @@ namespace mlc::parser {
         struct Parse<String<C, Cs...>> : Failure {};
     };
 
+    template <class P>
+    struct NotP {
+    private:
+        template <string I, class>
+        struct Helper : Success<Null, I> {};
+        template <string I1, class R, string I2>
+        struct Helper<I1, Success<R, I2>> : Failure {};
+    public:
+        template <string I>
+        using Parse = Helper<I, Parse_result<P, I>>;
+    };
+
 
     template <class P>
     struct IgnoreP {
@@ -84,7 +96,7 @@ namespace mlc::parser {
         struct Helper<Success<R, I>> : Success<Null, I> {};
     public:
         template <string I>
-        struct Parse : Helper<Parse_result<P, I>> {};
+        using Parse = Helper<Parse_result<P, I>>;
     };
 
 
@@ -110,6 +122,8 @@ namespace mlc::parser {
         struct Helper1<R, Success<Null, I>> : Success<R, I> {};
         template <class R1, class R2, string I>
         struct Helper1<R1, Success<R2, I>> : Success<Pair<R1, R2>, I> {};
+        template <string I>
+        struct Helper1<Null, Success<Null, I>> : Success<Null, I> {};
 
         template <class>
         struct Helper2 : Failure {};
@@ -117,7 +131,7 @@ namespace mlc::parser {
         struct Helper2<Success<R, I>> : Helper1<R, Parse_result<P2, I>> {};
     public:
         template <string I>
-        struct Parse : Helper2<Parse_result<P1, I>> {};
+        using Parse = Helper2<Parse_result<P1, I>>;
     };
 
     template <class P, class... Ps>
@@ -133,7 +147,7 @@ namespace mlc::parser {
         struct Helper<Success<R, I>> : Success<typename F::template F<R>::Result, I> {};
     public:
         template <string I>
-        struct Parse : Helper<Parse_result<P, I>> {};
+        using Parse = Helper<Parse_result<P, I>>;
     };
 
 
@@ -147,7 +161,7 @@ namespace mlc::parser {
             Helper<List<Ts..., T>, I, Parse_result<P, I>> {};
     public:
         template <string I>
-        struct Parse : Helper<List<>, I, Parse_result<P, I>> {};
+        using Parse = Helper<List<>, I, Parse_result<P, I>>;
     };
 
     template <class P>
@@ -159,7 +173,7 @@ namespace mlc::parser {
         struct Helper<Success<L, I>> : Success<L, I> {};
     public:
         template <string I>
-        struct Parse : Helper<Parse_result<Zero_or_moreP<P>, I>> {};
+        using Parse = Helper<Parse_result<Zero_or_moreP<P>, I>>;
     };
 
 
@@ -181,7 +195,7 @@ namespace mlc::parser {
             > {};
     public:
         template <string I>
-        struct Parse : Helper<Parse_result<P1, I>, Parse_result<P2, I>> {};
+        using Parse = Helper<Parse_result<P1, I>, Parse_result<P2, I>>;
     };
 
     template <class P, class... Ps>

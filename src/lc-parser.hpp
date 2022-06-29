@@ -11,8 +11,11 @@ namespace mlc::parser {
     template <class P>
     using WsdP = SeqP<WsP, P, WsP>;
 
+    template <unsigned char c>
+    using TokP = IgnoreP<CharP<Character<c>>>;
+
     template <class P>
-    using ParenP = SeqP<IgnoreP<CharP<Character<'('>>>, P, IgnoreP<CharP<Character<')'>>>>;
+    using ParenP = SeqP<TokP<'('>, P, TokP<')'>>;
 
     using NameP = One_or_moreP<PredP<Is_alpha>>;
 
@@ -52,18 +55,18 @@ namespace mlc::parser {
     DECLARE_PARSER(ExprP);
 
 
-    using VarP = MapP<NameP, Adapt_template<ast::Variable>>;
+    using VarP = MapP<Seq2P<NameP, NotP<Seq2P<WsP, TokP<'='>>>>, Adapt_template<ast::Variable>>;
 
     template <delayer T>
-    struct AbsP : MapP<
+    using AbsP = MapP<
         SeqP<
-            IgnoreP<CharP<Character<'\\'>>>,
+            TokP<'\\'>,
             One_or_moreP<WsdP<NameP>>,
-            IgnoreP<CharP<Character<'.'>>>,
+            TokP<'.'>,
             ExprP<T>
         >,
         Adapt_pair_argument<Flip<Fold_right<Adapt_template<ast::Abstraction>>>>
-    > {};
+    >;
 
     template <delayer T>
     using Simple_exprP = WsdP<OrP<VarP, AbsP<T>, IntP, ParenP<ExprP<T>>>>;
@@ -75,9 +78,26 @@ namespace mlc::parser {
     >);
 
 
+    using BindP = MapP<
+        WsdP<SeqP<NameP, WsdP<TokP<'='>>, ExprP<void>>>,
+        Adapt_pair_argument<Adapt_template<ast::Binding>>
+    >;
+
+    using EnvP = Zero_or_moreP<BindP>;
+
+}
+
+
+namespace mlc {
+
     struct Parse_expression {
         template <string I>
-        struct F : Parse_result<ExprP<void>, I> {};
+        using F = parser::Parse_result<parser::ExprP<void>, I>;
+    };
+
+    struct Parse_environment {
+        template <string I>
+        using F = parser::Parse_result<parser::EnvP, I>;
     };
 
 }
